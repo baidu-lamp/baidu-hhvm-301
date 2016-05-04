@@ -2668,10 +2668,10 @@ const String& ExecutionContext::createFunction(const String& args,
   //
   // We have to eval now to emulate this behavior.
   TypedValue retval;
-  invokeFunc(&retval, unit->getMain(), init_null_variant,
-             nullptr, nullptr, nullptr, nullptr,
-             InvokePseudoMain);
-
+//  invokeFunc(&retval, unit->getMain(), init_null_variant,
+//             nullptr, nullptr, nullptr, nullptr,
+//             InvokePseudoMain);
+//
   // __lambda_func will be the only hoistable function.
   // Any functions or closures defined in it will not be hoistable.
   Func* lambda = unit->firstHoistable();
