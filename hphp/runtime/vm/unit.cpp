@@ -1025,18 +1025,37 @@ bool Unit::defCns(const StringData* cnsName, const TypedValue* value,
     raise_notice(Strings::CONSTANT_ALREADY_DEFINED, cnsName->data());
     return false;
   }
-  return defCnsHelper(handle, value, cnsName);
+  return defCnsHelper(handle, value, cnsName,persistent);
 }
 
 uint64_t Unit::defCnsHelper(uint64_t ch,
                             const TypedValue *value,
-                            const StringData *cnsName) {
+                            const StringData *cnsName,bool persistent /* = false */) {
   TypedValue* cns = &RDS::handleToRef<TypedValue>(ch);
   if (UNLIKELY(cns->m_type != KindOfUninit) ||
       UNLIKELY(cns->m_data.pref != nullptr)) {
     raise_notice(Strings::CONSTANT_ALREADY_DEFINED, cnsName->data());
   } else if (UNLIKELY(!tvAsCVarRef(value).isAllowedAsConstantValue())) {
     raise_warning(Strings::CONSTANTS_MUST_BE_SCALAR);
+  } else if (!persistent){
+    switch (value->m_type) {
+        case KindOfString:
+            value->m_data.pstr->setRefCount(StaticValue);
+            break;
+        case KindOfArray:
+            value->m_data.parr->setRefCount(StaticValue);
+            break;
+        case KindOfRef:
+        case KindOfObject:
+        case KindOfResource:
+            not_reached(); // object shouldn't be in a scalar array
+            break;
+        default:
+            break;
+    }
+    cns->m_type = value->m_type;
+    cns->m_data = value->m_data;
+    return true;
   } else {
     Variant v = tvAsCVarRef(value);
     v.setEvalScalar();

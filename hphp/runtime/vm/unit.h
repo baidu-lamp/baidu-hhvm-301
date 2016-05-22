@@ -519,7 +519,7 @@ struct Unit {
                      bool persistent = false);
   static uint64_t defCnsHelper(uint64_t ch,
                                const TypedValue* value,
-                               const StringData* cnsName);
+                               const StringData* cnsName,bool persistent = false);
   static void defDynamicSystemConstant(const StringData* cnsName,
                                        const void* data);
   static bool defCnsDynamic(const StringData* cnsName, TypedValue* value);
