@@ -155,3 +155,8 @@ function(HHVM_SYSTEMLIB EXTNAME SOURCE_FILE)
 	append_systemlib(${EXTNAME} ${SOURCE_FILE} systemlib)
 	embed_systemlibs(${EXTNAME} "${EXTNAME}.so")
 endfunction()
+
+function(embed_systemlib EXTNAME EXTNAME_SO SOURCE_FILE)
+     append_systemlib(${EXTNAME} ${SOURCE_FILE} systemlib)
+     embed_systemlibs(${EXTNAME} "${EXTNAME_SO}")
+endfunction(embed_systemlib)

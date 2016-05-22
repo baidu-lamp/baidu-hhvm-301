@@ -44,7 +44,7 @@ else()
 		set(GNUCC_PLAT_OPT "-mcrc32")
 	endif()
 	set(CMAKE_C_FLAGS "-w")
-	set(CMAKE_CXX_FLAGS "-fno-gcse -fno-omit-frame-pointer -ftemplate-depth-180 -Wall -Woverloaded-virtual -Wno-deprecated -Wno-strict-aliasing -Wno-write-strings -Wno-invalid-offsetof -fno-operator-names -Wno-error=array-bounds -Wno-error=switch -std=gnu++11 -Werror=format-security -Wno-unused-result -Wno-sign-compare -Wno-attributes -Wno-maybe-uninitialized ${GNUCC_PLAT_OPT} ${GNUCC_48_OPT}")
+	set(CMAKE_CXX_FLAGS "-w -fno-gcse -fno-omit-frame-pointer -ftemplate-depth-180 -Wall -Woverloaded-virtual -Wno-deprecated -Wno-strict-aliasing -Wno-write-strings -Wno-invalid-offsetof -fno-operator-names -Wno-error=array-bounds -Wno-error=switch -std=gnu++11 -Werror=format-security -Wno-unused-result -Wno-sign-compare -Wno-attributes -Wno-maybe-uninitialized ${GNUCC_PLAT_OPT} ${GNUCC_48_OPT} -fpermissive")
 endif()
 
 if(${CMAKE_CXX_COMPILER} MATCHES ".*clang.*")
