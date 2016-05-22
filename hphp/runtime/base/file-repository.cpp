@@ -70,7 +70,6 @@ PhpFile::PhpFile(const std::string &fileName,
 }
 
 PhpFile::~PhpFile() {
-  always_assert(getRef() == 0);
   if (m_unit != nullptr) {
     // If we have or in the process of a collecting an hhprof dump than we need
     // to keep these units around as they might be needed for symbol resolution
@@ -103,9 +102,7 @@ int PhpFile::decRef(int n) {
 }
 
 void PhpFile::decRefAndDelete() {
-  if (decRef() == 0) {
     Treadmill::enqueue([this] { FileRepository::onDelete(this); });
-  }
 }
 
 void PhpFile::setId(int id) {
@@ -147,11 +144,6 @@ bool FileRepository::fileDump(const char *filename) {
 }
 
 void FileRepository::onDelete(PhpFile* f) {
-  assert(f->getRef() == 0);
-  if (md5Enabled()) {
-    WriteLock lock(s_md5Lock);
-    s_md5Files.erase(f->getMd5());
-  }
   delete f;
 }
 
@@ -220,6 +212,10 @@ PhpFile *FileRepository::checkoutFile(StringData *rname,
     if (old && old != acc->second) {
       if (old->getPhpFile() != acc->second->getPhpFile()) {
         toKill = old->getPhpFile();
+        if (md5Enabled()) {
+            WriteLock lock(s_md5Lock);
+            s_md5Files.erase(toKill->getMd5());
+        }
       }
       delete old;
     }
@@ -267,13 +263,11 @@ PhpFile *FileRepository::checkoutFile(StringData *rname,
 
   if (isNew) {
     acc->second = new PhpFileWrapper(s, ret);
-    ret->incRef();
     ret->setId(RDS::allocBit());
   } else {
     PhpFile *f = old->getPhpFile();
     if (f != ret) {
       ret->setId(f->getId());
-      ret->incRef();
     }
     acc->second = new PhpFileWrapper(s, ret);
   }

@@ -96,7 +96,7 @@ class PhpFileWrapper {
 public:
   PhpFileWrapper(const struct stat &s, PhpFile *phpFile) :
     m_mtime(s.st_mtim), m_ino(s.st_ino), m_devId(s.st_dev),
-    m_phpFile(phpFile) {
+    m_phpFile(phpFile),m_filesize(s.st_size) {
   }
   ~PhpFileWrapper() {}
   bool isChanged(const struct stat &s) {
@@ -105,7 +105,7 @@ public:
     }
     return timespecCompare(m_mtime, s.st_mtim) < 0 ||
            m_ino != s.st_ino ||
-           m_devId != s.st_dev;
+           m_devId != s.st_dev||m_filesize!=s.st_size;
   }
   PhpFile *getPhpFile() { return m_phpFile; }
 
@@ -113,6 +113,7 @@ private:
   struct timespec m_mtime;
   ino_t m_ino;
   dev_t m_devId;
+  off_t m_filesize;
   PhpFile *m_phpFile;
 };
 
