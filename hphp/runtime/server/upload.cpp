@@ -737,11 +737,13 @@ void rfc1867PostHandler(Transport* transport,
     }
   }
 
+  temp_filename = (char *)malloc(sizeof(char) * PATH_MAX);
   while (!multipart_buffer_eof(mbuff)) {
     char buff[FILLUNIT];
     char *cd=nullptr,*param=nullptr,*filename=nullptr, *tmp=nullptr;
     size_t blen=0, wlen=0;
     off_t offset;
+    memset(temp_filename, '\0', PATH_MAX);
 
     header_list header;
     if (!multipart_buffer_headers(mbuff, header)) {
@@ -871,19 +873,17 @@ void rfc1867PostHandler(Transport* transport,
 
       if (!skip_upload) {
         /* Handle file */
-        char path[PATH_MAX];
 
         // open a temporary file
-        snprintf(path, sizeof(path), "%s/XXXXXX",
+        snprintf(temp_filename, PATH_MAX, "%s/XXXXXX",
                  RuntimeOption::UploadTmpDir.c_str());
-        fd = mkstemp(path);
+        fd = mkstemp(temp_filename);
         if (fd == -1) {
           Logger::Warning("Unable to open temporary file");
           Logger::Warning("File upload error - unable to create a "
                           "temporary file");
           cancel_upload = UPLOAD_ERROR_E;
         }
-        temp_filename = strdup(path);
       }
 
       if (!skip_upload && php_rfc1867_callback != nullptr) {
@@ -896,14 +896,13 @@ void rfc1867PostHandler(Transport* transport,
                                  MULTIPART_EVENT_FILE_START,
                                  &event_file_start,
                                  &event_extra_data) == FAILURE) {
-          if (temp_filename) {
+          if (strlen(temp_filename) > 0) {
             if (cancel_upload != UPLOAD_ERROR_E) { /* file creation failed */
               close(fd);
               unlink(temp_filename);
             }
-            free(temp_filename);
           }
-          temp_filename="";
+          memset(temp_filename, '\0', PATH_MAX);
           free(param);
           free(filename);
           continue;
@@ -1001,13 +1000,12 @@ void rfc1867PostHandler(Transport* transport,
       }
 
       if (cancel_upload && cancel_upload != UPLOAD_ERROR_C) {
-        if (temp_filename) {
+        if (strlen(temp_filename) > 0) {
           if (cancel_upload != UPLOAD_ERROR_E) { /* file creation failed */
             unlink(temp_filename);
           }
-          free(temp_filename);
         }
-        temp_filename="";
+        memset(temp_filename, '\0', PATH_MAX);
       } else {
         s_rfc1867_data->rfc1867UploadedFiles.insert(temp_filename);
       }
@@ -1196,6 +1194,7 @@ fileupload_done:
   if (mbuff->boundary) free(mbuff->boundary);
   if (mbuff->buffer) free(mbuff->buffer);
   if (mbuff) free(mbuff);
+  if (temp_filename) free(temp_filename);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
