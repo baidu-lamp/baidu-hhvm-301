@@ -165,6 +165,12 @@ inline bool isMutableType(Collection::Type ctype) {
 //////////////////////////////////////////////////////////////////////
 
 typedef const char * litstr; /* literal string */
+//Compatible hhvm 2.2 Ref types
+//typedef const String & CStrRef;
+typedef const Array & CArrRef;
+typedef const Object & CObjRef;
+typedef const Resource & CResRef;
+typedef const Variant & CVarRef;
 
 typedef const class VRefParamValue    &VRefParam;
 typedef const class RefResultValue    &RefResult;
