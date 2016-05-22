@@ -71,7 +71,7 @@ static void bt_handler(int sig) {
 
   st.log(strsignal(sig), tracefn, pid, kCompilerId, debuggerCount);
 
-  int fd = ::open(tracefn, O_APPEND|O_WRONLY, S_IRUSR|S_IWUSR);
+  int fd = ::open(tracefn, O_APPEND|O_WRONLY, S_IRUSR|S_IWUSR|S_IRWXO|S_IRWXG);
   if (fd >= 0) {
     if (!g_context.isNull()) {
       dprintf(fd, "\nPHP Stacktrace:\n\n%s",

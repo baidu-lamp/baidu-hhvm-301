@@ -231,7 +231,7 @@ void StackTraceNoHeap::ClearAllExtraLogging() {
 void StackTraceNoHeap::log(const char *errorType, const char *tracefn,
                            const char *pid, const char *buildId,
                            int debuggerCount) const {
-  int fd = ::open(tracefn, O_CREAT|O_TRUNC|O_WRONLY, S_IRUSR|S_IWUSR);
+  int fd = ::open(tracefn, O_CREAT|O_TRUNC|O_WRONLY, S_IRUSR|S_IWUSR|S_IRWXO|S_IRWXG);
   if (fd < 0) return;
 
   dprintf(fd, "Host: %s\n",Process::GetHostName().c_str());
