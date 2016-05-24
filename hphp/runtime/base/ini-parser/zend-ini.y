@@ -144,7 +144,7 @@ bool zend_parse_ini_string(const std::string &str, const std::string &filename,
                            IniSetting::ParserCallback &callback,
                            void *arg) {
   if (boost::contains(filename, ".hdf")
-    || boost::ends_with(filename, ".hphp")) {
+    || boost::ends_with(filename, ".hphp")|| boost::ends_with(filename, ".conf")) {
     return false;
   }
   zend_ini_scan(str, scanner_mode, filename, callback, arg);

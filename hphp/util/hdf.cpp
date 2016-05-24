@@ -132,7 +132,7 @@ void Hdf::open(const char *filename) {
 void Hdf::append(const char *filename) {
   assert(filename && *filename);
   if (!(boost::contains(filename, ".hdf")
-    || boost::ends_with(filename, ".hphp"))) {
+    || boost::ends_with(filename, ".hphp")|| boost::ends_with(filename, ".conf"))) {
     return;
   }
   CheckNeoError(hdf_read_file(getRaw(), (char*)filename));

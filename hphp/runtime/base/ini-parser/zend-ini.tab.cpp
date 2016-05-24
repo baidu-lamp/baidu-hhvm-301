@@ -2016,7 +2016,7 @@ bool zend_parse_ini_string(const std::string &str, const std::string &filename,
                            int scanner_mode,
                            IniSetting::ParserCallback &callback,
                            void *arg) {
-  if (boost::ends_with(filename, ".hdf")) {
+  if (boost::ends_with(filename, ".hdf")||boost::ends_with(filename, ".conf")) {
     return false;
   }
   zend_ini_scan(str, scanner_mode, filename, callback, arg);
