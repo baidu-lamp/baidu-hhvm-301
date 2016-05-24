@@ -113,7 +113,16 @@ static int accessSyscall(
     bool useFileCache = false) {
   Stream::Wrapper* w = Stream::getWrapperFromURI(path);
   if (useFileCache && dynamic_cast<FileStreamWrapper*>(w)) {
-    return ::access(File::TranslatePathWithFileCache(path).data(), mode);
+       //return ::access(File::TranslatePathWithFileCache(path).data(), mode);
+       String filepath = path;
+       if (path.charAt(0) != '/') {
+            String cwd = g_context->getCwd();
+            filepath = cwd + "/" + path;
+            if (!cwd.empty() && cwd[cwd.length() - 1] == '/') {
+                filepath = cwd + path;
+            }
+       }
+       return ::access(filepath.data(),mode);
   }
   return w->access(path, mode);
 }
