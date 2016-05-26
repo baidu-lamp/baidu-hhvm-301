@@ -81,7 +81,7 @@ public:
     MaxRetryOpenOnFail = mysql["MaxRetryOpenOnFail"].getInt32(1);
     MaxRetryQueryOnFail = mysql["MaxRetryQueryOnFail"].getInt32(1);
     Socket = mysql["Socket"].getString();
-    TypedResults = mysql["TypedResults"].getBool(true);
+    TypedResults = mysql["TypedResults"].getBool(false);
     IniSetting::Bind(IniSetting::CORE, IniSetting::PHP_INI_SYSTEM,
                      "hhvm.mysql.typed_results", &TypedResults);
   }

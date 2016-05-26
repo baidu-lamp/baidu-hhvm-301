@@ -46,7 +46,7 @@ bool mysqlExtension::KillOnTimeout = false;
 int mysqlExtension::MaxRetryOpenOnFail = 1;
 int mysqlExtension::MaxRetryQueryOnFail = 1;
 std::string mysqlExtension::Socket = "";
-bool mysqlExtension::TypedResults = true;
+bool mysqlExtension::TypedResults = false;
 
 mysqlExtension s_mysql_extension;
 
