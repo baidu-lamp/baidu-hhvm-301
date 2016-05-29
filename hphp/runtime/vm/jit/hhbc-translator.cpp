@@ -4947,6 +4947,7 @@ HhbcTranslator::interpOutputLocals(const NormalizedInstruction& inst,
     case OpSetOpN:
     case OpIncDecN:
     case OpBindN:
+    case OpVGetN:
     case OpUnsetN:
       smashesAllLocals = true;
       break;
