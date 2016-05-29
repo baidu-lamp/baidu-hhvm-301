@@ -76,16 +76,16 @@ static bool ini_on_update_hash_strategy(const std::string& value) {
   } else if (!strncasecmp(value.data(), "consistent", sizeof("consistent"))) {
     MEMCACHEG(hash_strategy) = "consistent";
   }
-  return false;
+  return true;
 }
 
 static bool ini_on_update_hash_function(const std::string& value) {
   if (!strncasecmp(value.data(), "crc32", sizeof("crc32"))) {
-    MEMCACHEG(hash_strategy) = "crc32";
+    MEMCACHEG(hash_function) = "crc32";
   } else if (!strncasecmp(value.data(), "fnv", sizeof("fnv"))) {
-    MEMCACHEG(hash_strategy) = "fnv";
+    MEMCACHEG(hash_function) = "fnv";
   }
-  return false;
+  return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -304,7 +304,11 @@ Variant c_Memcache::t_get(const Variant& key, VRefParam flags /*= null*/) {
     Variant retval = memcache_fetch_from_storage(payload, payload_len, flags);
     free(payload);
 
-    return retval;
+    if(!retval.isNull()){
+    	return retval;
+	}else{
+		return false;
+	}
   }
   return false;
 }
