@@ -58,7 +58,7 @@
 
 namespace HPHP {
 ///////////////////////////////////////////////////////////////////////////////
-
+bool RuntimeOption::EnableDynamicFuncWarn = true;
 bool RuntimeOption::Loaded = false;
 
 const char *RuntimeOption::ExecutionMode = "";
@@ -1144,6 +1144,7 @@ void RuntimeOption::Load(Hdf &config,
   }
   {
     Hdf eval = config["Eval"];
+    EnableDynamicFuncWarn = eval["EnableDynamicFuncWarn"].getBool(true);
     EnableHipHopSyntax = eval["EnableHipHopSyntax"].getBool();
     EnableHipHopExperimentalSyntax =
       eval["EnableHipHopExperimentalSyntax"].getBool();

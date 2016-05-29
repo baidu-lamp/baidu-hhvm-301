@@ -2611,6 +2611,16 @@ typedef RankedCHM<StringData*, HPHP::Unit*,
         StringDataHashCompare,
         RankEvaledUnits> EvaledUnitsMap;
 static EvaledUnitsMap s_evaledUnits;
+static std::atomic<int64_t> s_createfuncs;
+
+int64_t getEvaledUnits() {
+    return s_evaledUnits.size();
+}
+
+int64_t getCreateFuncs() {
+    return s_createfuncs.load(std::memory_order_acquire);
+}
+
 Unit* ExecutionContext::compileEvalString(
     StringData* code,
     const char* evalFilename /* = nullptr */) {
@@ -2619,6 +2629,9 @@ Unit* ExecutionContext::compileEvalString(
   // across requests.
   code = makeStaticString(code);
   if (s_evaledUnits.insert(acc, code)) {
+    if (RuntimeOption::EnableDynamicFuncWarn) {
+        raise_warning("Don't recommended call eval() maybe effect performance");
+    }
     acc->second = compile_string(
       code->data(),
       code->size(),
@@ -2644,6 +2657,10 @@ const String& ExecutionContext::createFunction(const String& args,
   // has the bonus feature that the value of __FUNCTION__ inside the created
   // function will match Zend. (Note: Zend will actually fatal if there's a
   // user function named __lambda_func when you call create_function. Huzzah!)
+  s_createfuncs.fetch_add(1, std::memory_order_acq_rel);
+  if (RuntimeOption::EnableDynamicFuncWarn) {
+      raise_warning("Don't recommended call create_function() maybe effect performance");
+  }
   static StringData* oldName = makeStaticString("__lambda_func");
   std::ostringstream codeStr;
   codeStr << "<?php function " << oldName->data()

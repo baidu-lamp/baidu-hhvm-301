@@ -60,7 +60,7 @@ public:
   static bool ClientExecutionMode() {
     return strcmp(ExecutionMode, "cli") == 0;
   }
-
+  static bool EnableDynamicFuncWarn;
   static const char *ExecutionMode;
   static std::string BuildId;
   static std::string InstanceId;
