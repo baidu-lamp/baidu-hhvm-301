@@ -309,6 +309,10 @@ public:
 
   const String& getSandboxId() const { return m_sandboxId; }
   void setSandboxId(const String& sandboxId) { m_sandboxId = sandboxId; }
+  // This has to appear before m_userErrorHandlers since C++ destructs objects
+  // from last declared to first declared. If it was after, we would destroy
+  // the property table before the error handlers ran.
+  std::unordered_map<const ObjectData*,ArrayNoDtor> dynPropTable;
 
 private:
   class OutputBuffer {
@@ -457,8 +461,6 @@ public:
   typedef hphp_hash_map<const StringData*, ClassInfo::ConstantInfo*,
                         string_data_hash, string_data_same> ConstInfoMap;
   ConstInfoMap m_constInfo;
-
-  std::unordered_map<const ObjectData*,ArrayNoDtor> dynPropTable;
 
   const Func* lookupMethodCtx(const Class* cls,
                                         const StringData* methodName,

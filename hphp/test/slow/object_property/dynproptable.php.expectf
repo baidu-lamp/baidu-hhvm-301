@@ -1,0 +1,5 @@
+Fatal error: Uncaught exception 'Exception' with message 'Try to cause an exception' in %s/test/slow/object_property/dynproptable.php:19
+Stack trace:
+#0 %s/test/slow/object_property/dynproptable.php(25): MyClass->fail()
+#1 %s/test/slow/object_property/dynproptable.php(28): main()
+#2 {main}
