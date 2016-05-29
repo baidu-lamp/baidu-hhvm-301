@@ -273,11 +273,18 @@ Variant c_Memcached::t_getmultibykey(const String& server_key, const Array& keys
 
   bool preserveOrder = flags & q_Memcached$$GET_PRESERVE_ORDER;
   Array returnValue;
+
+  // same as php memcached.so
+  if (keys.size() == 0) {
+        m_impl->rescode = q_Memcached$$RES_BAD_KEY_PROVIDED;
+        return Array::Create();
+  }
   if (!getMultiImpl(server_key, keys, cas_tokens.isReferenced(),
                     preserveOrder ? &returnValue : NULL)) {
     return false;
   }
 
+  int i = 0;
   Array cas_tokens_arr;
   SCOPE_EXIT { if (cas_tokens.isReferenced()) cas_tokens = cas_tokens_arr; };
 
@@ -293,10 +300,16 @@ Variant c_Memcached::t_getmultibykey(const String& server_key, const Array& keys
     size_t keyLength = memcached_result_key_length(&result.value);
     String sKey(key, keyLength, CopyString);
     returnValue.set(sKey, value, true);
+    i++;
     if (cas_tokens.isReferenced()) {
       double cas = (double) memcached_result_cas(&result.value);
       cas_tokens_arr.set(sKey, cas, true);
     }
+  }
+  // same as php memcached.so
+  if (i == 0 && status == MEMCACHED_NOTFOUND) {
+	  m_impl->rescode = status;
+	  return Array::Create();
   }
 
   if (status != MEMCACHED_END && !handleError(status)) return false;
@@ -822,6 +835,18 @@ Variant c_Memcached::t_getoption(int option) {
                                           (memcached_behavior_t)option);
   }
 }
+
+bool c_Memcached::t_setoptions(CArrRef options) {
+  for (ArrayIter iter(options); iter; ++iter) {
+    Variant key = iter.first();
+    if (!key.isInteger()) continue;
+    if (!t_setoption(key.toInt32(), iter.second())) {
+      return false;
+    }
+  }
+  return true;
+}
+
 
 bool c_Memcached::t_setoption(int option, const Variant& value) {
   switch (option) {

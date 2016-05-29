@@ -905,6 +905,22 @@
                     ]
                 },
                 {
+                    "name": "setOptions",
+                    "desc": "This method sets some values of Memcached options. Some options correspond to the ones defined by libmemcached, and some are specific to the extension. See Memcached Constants for more information.\n\nThe options listed below require values specified via constants.\n\nMemcached::OPT_HASH requires Memcached::HASH_* values.\n\nMemcached::OPT_DISTRIBUTION requires Memcached::DISTRIBUTION_* values.",
+                    "flags": [
+                    ],
+                    "return": {
+                        "type": "Boolean",
+                        "desc": "Returns TRUE on success or FALSE on failure."
+                    },
+                    "args": [
+                        {
+                            "name": "options",
+                            "type": "VariantMap"
+                        }
+                    ]
+                },
+                {
                     "name": "setOption",
                     "desc": "This method sets the value of a Memcached option. Some options correspond to the ones defined by libmemcached, and some are specific to the extension. See Memcached Constants for more information.\n\nThe options listed below require values specified via constants.\n\nMemcached::OPT_HASH requires Memcached::HASH_* values.\n\nMemcached::OPT_DISTRIBUTION requires Memcached::DISTRIBUTION_* values.",
                     "flags": [

@@ -136,6 +136,7 @@ class c_Memcached : public ExtObjectData, public Sweepable {
   public: bool t_setmulti(const Array& items, int expiration = 0);
   public: bool t_setmultibykey(const String& server_key, const Array& items, int expiration = 0);
   public: bool t_setoption(int option, const Variant& value);
+  public: bool t_setoptions(CArrRef options);
  private:
   class Impl {
   public:
