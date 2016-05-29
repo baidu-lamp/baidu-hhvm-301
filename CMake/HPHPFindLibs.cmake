@@ -162,6 +162,7 @@ find_package(EXPAT REQUIRED)
 include_directories(${EXPAT_INCLUDE_DIRS})
 
 # SQLite3 + timelib are bundled in HPHP sources
+include_directories("${HPHP_HOME}/hphp/third_party/fastlz")
 include_directories("${HPHP_HOME}/hphp/third_party/libsqlite3")
 include_directories("${HPHP_HOME}/hphp/third_party/timelib")
 include_directories("${HPHP_HOME}/hphp/third_party/libafdt/src")
@@ -524,6 +525,7 @@ endif()
 		target_link_libraries(${target} ${RT_LIB})
 	endif()
 
+	target_link_libraries(${target} fastlz)
 	target_link_libraries(${target} timelib)
 	target_link_libraries(${target} sqlite3)
 	target_link_libraries(${target} lz4)
