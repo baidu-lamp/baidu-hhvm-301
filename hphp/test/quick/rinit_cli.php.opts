@@ -1,0 +1,1 @@
+-v Server.RequestInitDocument=__DIR__/rinit_cli.php.inc

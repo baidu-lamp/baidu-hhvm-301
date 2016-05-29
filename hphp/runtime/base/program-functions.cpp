@@ -1405,7 +1405,10 @@ static int execute_program_impl(int argc, char** argv) {
         execute_command_line_begin(new_argc, new_argv,
                                    po.xhprofFlags, po.config);
         ret = 255;
-        if (hphp_invoke_simple(file)) {
+        bool error;
+        string errorMsg;
+        if (hphp_invoke(g_context.getNoCheck(), file, false, null_array, uninit_null(), 
+          RuntimeOption::RequestInitFunction, RuntimeOption::RequestInitDocument, error, errorMsg)) {
           ret = ExitException::ExitCode;
         }
         execute_command_line_end(po.xhprofFlags, true, file.c_str());
