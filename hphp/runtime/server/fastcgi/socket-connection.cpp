@@ -21,6 +21,8 @@
 #include "thrift/lib/cpp/transport/TSocketAddress.h"
 #include "thrift/lib/cpp/transport/TTransportException.h"
 #include "ti/proxygen/lib/services/ManagedConnection.h"
+#include "hphp/runtime/base/runtime-option.h"
+#include "hphp/util/logger.h"
 
 namespace HPHP {
 
@@ -47,6 +49,7 @@ SocketConnection::~SocketConnection() {
 }
 
 void SocketConnection::timeoutExpired() noexcept {
+  Logger::Info("Fastcgi connection: connection time took longer than %d s and timeout, it will be shutdown!", RuntimeOption::ConnectionTimeoutSeconds);
   shutdownTransport();
 }
 
