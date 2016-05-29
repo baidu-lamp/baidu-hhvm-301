@@ -654,7 +654,7 @@ class Redis {
   }
 
   public function getTimeout() {
-    return $this->getReadTimeout();
+    return $this->timeout_connect;
   }
 
   public function getReadTimeout() {
@@ -806,7 +806,7 @@ class Redis {
     'lpushx' => [ 'format' => 'kl', 'return' => 'Long' ],
     'lrange' => [ 'format' => 'kll', 'return' => 'Vector', 'retargs' => [1] ],
     'lgetrange' => [ 'alias' => 'lrange' ],
-    'lrem' => [ 'format' => 'kvl', 'return' => 'Long' ],
+    'lrem' => [ 'format' => 'kvs', 'return' => 'Long' ],
     'lremove' => [ 'alias' => 'lrem' ],
     'lset' => [ 'format' => 'klv', 'return' => 'Boolean' ],
     'ltrim' => [ 'format' => 'kll', 'return' => 'Boolean' ],
@@ -955,15 +955,15 @@ class Redis {
   }
 
   protected function sockReadLine() {
-    if (!$this->checkConnection()) {
-      return false;
-    }
-    $line = fgets($this->connection);
-    if (substr($line, -2) == "\r\n") {
-      $line = substr($line, 0, -2);
-    }
-
-    return $line;
+    $line = '';
+    do {
+      if (!$this->checkConnection()) {
+        return false;
+      }
+      $line .= fgets($this->connection);
+    } while (substr($line, -2) !== "\r\n");
+    
+    return substr($line, 0, -2);
   }
 
   protected function sockReadData(&$type) {
@@ -1074,6 +1074,9 @@ class Redis {
    * "*2\r\n$3\r\nGET\r\n$7\r\nsomekey\r\n"
    */
   protected function processArrayCommand($cmd, array $args) {
+	if(empty($args)){
+		return false;
+	}
     if ($this->mode == self::PIPELINE) {
       $this->commands[] = [ 'cmd' => $cmd, 'args' => $args ];
       return true;
@@ -1445,7 +1448,9 @@ class Redis {
 
     if ($format == '...') {
       $args = $this->translateVarArgs($args, $func['vararg']);
-      $this->processArrayCommand($func['cmd'], $args);
+      if(!$this->processArrayCommand($func['cmd'], $args)){
+		return false;
+	  }
       if (empty($func['handler'])) {
         return null;
       }
@@ -1481,7 +1486,9 @@ class Redis {
           } break;
       }
     }
-    $this->processArrayCommand($func['cmd'], $args);
+    if(!$this->processArrayCommand($func['cmd'], $args)){
+	  return false;
+	}
     if (empty($func['handler'])) {
       return null;
     }
@@ -1538,7 +1545,7 @@ class Redis {
       return false;
     }
     stream_set_blocking($conn, true);
-    stream_set_timeout($conn, $this->timeout_seconds, $this->timeout_useconds);
+    $this->setOption(Redis::OPT_READ_TIMEOUT,$timeout);
 
     return true;
   }
