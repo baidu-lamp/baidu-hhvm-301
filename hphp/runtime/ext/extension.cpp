@@ -67,9 +67,9 @@ static ExtensionUninitializer s_extension_uninitializer;
 ///////////////////////////////////////////////////////////////////////////////
 // dlfcn wrappers
 
-static void* dlopen(const char *dso) {
+static void* dlopen(const char *dso, int flags) {
 #ifdef HAVE_LIBDL
-  return ::dlopen(dso, DLOPEN_FLAGS);
+  return ::dlopen(dso, flags);
 #else
   return nullptr;
 #endif
@@ -113,6 +113,10 @@ Extension::Extension(litstr name, const char *version /* = "" */)
 void Extension::LoadModules(Hdf hdf) {
   // Load up any dynamic extensions
   std::string path = hdf["DynamicExtensionPath"].getString(".");
+  int dl_flags = DLOPEN_FLAGS;
+  if (!hdf["DynamicExtensionLoadFlags"]["RtldGlobal"].getBool(true)) {
+      dl_flags &= ~RTLD_GLOBAL;
+  }
   for (Hdf ext = hdf["DynamicExtensions"].firstChild();
        ext.exists(); ext = ext.next()) {
     std::string extLoc = ext.getString();
@@ -126,7 +130,7 @@ void Extension::LoadModules(Hdf hdf) {
     // Extensions are self-registering,
     // so we bring in the SO then
     // throw away its handle.
-    void *ptr = dlopen(extLoc.c_str());
+    void *ptr = dlopen(extLoc.c_str(), dl_flags);
     if (!ptr) {
       throw Exception("Could not open extension %s: %s",
                       extLoc.c_str(), dlerror());
