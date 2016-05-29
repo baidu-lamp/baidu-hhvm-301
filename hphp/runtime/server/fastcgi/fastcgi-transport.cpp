@@ -296,6 +296,9 @@ void FastCGITransport::sendResponseHeaders(IOBufQueue& queue, int code) {
 
 void FastCGITransport::sendImpl(const void *data, int size, int code,
                                 bool chunked) {
+  if (!m_callback) {
+      return;
+  }
   IOBufQueue queue;
   if (!m_headersSent) {
     sendResponseHeaders(queue, code);
@@ -312,6 +315,9 @@ void FastCGITransport::sendImpl(const void *data, int size, int code,
 }
 
 void FastCGITransport::onSendEndImpl() {
+  if (!m_callback) {
+      return;
+  }
   Callback* callback = m_callback;
   auto fn = [callback]() mutable {
     if (callback) {
@@ -319,6 +325,7 @@ void FastCGITransport::onSendEndImpl() {
     }
   };
   m_connection->getEventBase()->runInEventBaseThread(fn);
+  m_callback = nullptr;
 }
 
 void FastCGITransport::onBody(std::unique_ptr<folly::IOBuf> chain) {

@@ -252,7 +252,6 @@ bool LibEventTransport::isServerStopping() {
 void LibEventTransport::sendImpl(const void *data, int size, int code,
                                  bool chunked) {
   assert(data);
-  assert(!m_sendStarted || chunked);
   if (m_sendEnded) {
     // This should never happen, but when it does we have to bail out,
     // since there's no sensible way to send data at this point and
@@ -261,6 +260,7 @@ void LibEventTransport::sendImpl(const void *data, int size, int code,
     // somewhere.
     return;
   }
+  assert(!m_sendStarted || chunked);
   if (chunked) {
     assert(m_method != Method::HEAD);
     evbuffer *chunk = evbuffer_new();
@@ -289,6 +289,9 @@ void LibEventTransport::sendImpl(const void *data, int size, int code,
 }
 
 void LibEventTransport::onSendEndImpl() {
+  if (m_sendEnded) { 
+    return;
+  }
   if (m_chunkedEncoding) {
     m_server->onChunkedResponseEnd(m_workerId, m_request);
     m_sendEnded = true;
