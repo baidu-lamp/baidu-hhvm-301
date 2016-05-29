@@ -558,9 +558,9 @@ bool HttpServer::startServer(bool pageServer) {
         struct stat stat_buf;
         if (stat(RuntimeOption::ServerFileSocket.c_str(), &stat_buf) == 0
             && S_ISSOCK(stat_buf.st_mode)) {
-          std::string cmd = "bash -c '! fuser ";
+          std::string cmd = "bash -c '! PATH=$PATH:/sbin fuser ";
           cmd += RuntimeOption::ServerFileSocket;
-          cmd += "'";
+          cmd += "; exit $?'";
           if (FileUtil::ssystem(cmd.c_str()) == 0) {
             unlink(RuntimeOption::ServerFileSocket.c_str());
           }
