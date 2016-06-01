@@ -19,14 +19,67 @@
 
 #include "hphp/runtime/base/types.h"
 #include "hphp/runtime/base/complex-types.h"
+#include "hphp/runtime/base/request-local.h"
+#include "hphp/runtime/base/request-event-handler.h"
+
+#include <cstdint>
+#include <cstddef>
+#include <pcre.h>
+
+#define PREG_PATTERN_ORDER          1
+#define PREG_SET_ORDER              2
+#define PREG_OFFSET_CAPTURE         (1<<8)
+
+#define PREG_SPLIT_NO_EMPTY         (1<<0)
+#define PREG_SPLIT_DELIM_CAPTURE    (1<<1)
+#define PREG_SPLIT_OFFSET_CAPTURE   (1<<2)
+
+#define PREG_REPLACE_EVAL           (1<<0)
+
+#define PREG_GREP_INVERT            (1<<0)
+
+enum {
+  PHP_PCRE_NO_ERROR = 0,
+  PHP_PCRE_INTERNAL_ERROR,
+  PHP_PCRE_BACKTRACK_LIMIT_ERROR,
+  PHP_PCRE_RECURSION_LIMIT_ERROR,
+  PHP_PCRE_BAD_UTF8_ERROR,
+  PHP_PCRE_BAD_UTF8_OFFSET_ERROR
+};
 
 namespace HPHP {
 ///////////////////////////////////////////////////////////////////////////////
 
-struct PCREglobals {
+class pcre_cache_entry {
+  pcre_cache_entry(const pcre_cache_entry&);
+  pcre_cache_entry& operator=(const pcre_cache_entry&);
+
+public:
+  pcre_cache_entry() {}
+  ~pcre_cache_entry();
+
+  pcre *re;
+  pcre_extra *extra; // Holds results of studying
+  int preg_options;
+  int compile_options;
+};
+
+class PCREglobals:public RequestEventHandler {
+public:
+  PCREglobals() {}
+  ~PCREglobals(){};
+
+  virtual void requestInit();
+
+  virtual void requestShutdown();
+  
+  void cleanupOnRequestEnd(const pcre_cache_entry* ent);
+
   // pcre ini_settings
   int64_t m_preg_backtrace_limit;
   int64_t m_preg_recursion_limit;
+private:
+  std::vector<const pcre_cache_entry*> m_overflow;
 };
 
 Variant preg_grep(const String& pattern, const Array& input, int flags = 0);

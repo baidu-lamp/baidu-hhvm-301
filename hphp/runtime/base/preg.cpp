@@ -17,10 +17,8 @@
 #include "hphp/runtime/base/preg.h"
 
 #include "hphp/runtime/base/string-util.h"
-#include "hphp/runtime/base/request-local.h"
 #include "hphp/util/lock.h"
 #include "hphp/util/logger.h"
-#include <pcre.h>
 #include <onigposix.h>
 #include "hphp/runtime/base/runtime-option.h"
 #include "hphp/runtime/base/builtin-functions.h"
@@ -35,56 +33,31 @@
 #include <tbb/concurrent_hash_map.h>
 #include <utility>
 
-#define PREG_PATTERN_ORDER          1
-#define PREG_SET_ORDER              2
-#define PREG_OFFSET_CAPTURE         (1<<8)
-
-#define PREG_SPLIT_NO_EMPTY         (1<<0)
-#define PREG_SPLIT_DELIM_CAPTURE    (1<<1)
-#define PREG_SPLIT_OFFSET_CAPTURE   (1<<2)
-
-#define PREG_REPLACE_EVAL           (1<<0)
-
-#define PREG_GREP_INVERT            (1<<0)
-
-#define PCRE_CACHE_SIZE 4096
-
-/* Only defined in pcre >= 8.32 */
-#ifndef PCRE_STUDY_JIT_COMPILE
-# define PCRE_STUDY_JIT_COMPILE 0
-#endif
-
-enum {
-  PHP_PCRE_NO_ERROR = 0,
-  PHP_PCRE_INTERNAL_ERROR,
-  PHP_PCRE_BACKTRACK_LIMIT_ERROR,
-  PHP_PCRE_RECURSION_LIMIT_ERROR,
-  PHP_PCRE_BAD_UTF8_ERROR,
-  PHP_PCRE_BAD_UTF8_OFFSET_ERROR
-};
-
 namespace HPHP {
 ///////////////////////////////////////////////////////////////////////////////
 // regex cache and helpers
 
-IMPLEMENT_THREAD_LOCAL(PCREglobals, s_pcre_globals);
+static std::atomic<bool> s_isNotFull(true);
 
-class pcre_cache_entry {
-  pcre_cache_entry(const pcre_cache_entry&);
-  pcre_cache_entry& operator=(const pcre_cache_entry&);
+IMPLEMENT_REQUEST_LOCAL(PCREglobals, s_pcre_globals);
+void PCREglobals::requestInit() {
+}
 
-public:
-  pcre_cache_entry() {}
-  ~pcre_cache_entry() {
-    if (extra) free(extra); // we don't have pcre_free_study yet
-    pcre_free(re);
+void PCREglobals::requestShutdown() {
+  for(int i = 0; i < m_overflow.size(); i++){
+    delete m_overflow[i];
   }
+  m_overflow.clear();
+}
 
-  pcre *re;
-  pcre_extra *extra; // Holds results of studying
-  int preg_options;
-  int compile_options;
-};
+pcre_cache_entry::~pcre_cache_entry() {
+  if (extra) free(extra);
+  pcre_free(re);
+}
+
+void PCREglobals::cleanupOnRequestEnd(const pcre_cache_entry* ent) {
+  m_overflow.push_back(ent);
+}
 
 struct ahm_string_data_same {
   bool operator()(const StringData* s1, const StringData* s2) {
@@ -136,17 +109,27 @@ static const pcre_cache_entry* lookup_cached_pcre(const String& regex) {
 static const pcre_cache_entry*
 insert_cached_pcre(const String& regex, const pcre_cache_entry* ent) {
   assert(s_pcreCacheMap);
-  auto pair = s_pcreCacheMap->insert(
-    PCREEntry(makeStaticString(regex.get()), ent));
-  if (!pair.second) {
-    delete ent;
-    if (pair.first == s_pcreCacheMap->end()) {
-      raise_notice("PCRE cache full");
-      return nullptr;
-    }
-    return pair.first->second;
+  if(s_isNotFull){
+    auto pair = s_pcreCacheMap->insert(
+		PCREEntry(makeStaticString(regex.get()), ent));
+    if (!pair.second) {
+	  if (pair.first == s_pcreCacheMap->end()) {
+	    //pcre cache is full,we make s_isNotFull false and won't insert map
+		s_isNotFull = false;
+		s_pcre_globals->cleanupOnRequestEnd(ent);
+	    return ent;
+	   }
+	  // collision, delete the new one
+	  delete ent;
+      return pair.first->second;
+	}
+    return ent;
+  }else{
+    // Global Cache is full
+    // still return the entry and free it at the end of the request
+    s_pcre_globals->cleanupOnRequestEnd(ent);
+    return ent;
   }
-  return ent;
 }
 
 /*
