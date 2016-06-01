@@ -178,7 +178,7 @@ std::string RuntimeOption::Rfc1867Name = "video_ptoken";
 bool RuntimeOption::LibEventSyncSend = true;
 bool RuntimeOption::ExpiresActive = true;
 int RuntimeOption::ExpiresDefault = 2592000;
-std::string RuntimeOption::DefaultCharsetName = "utf-8";
+std::string RuntimeOption::DefaultCharsetName = "";
 bool RuntimeOption::ForceServerNameToHeader = false;
 bool RuntimeOption::EnableCufAsync = false;
 bool RuntimeOption::PathDebug = false;
@@ -848,7 +848,7 @@ void RuntimeOption::Load(Hdf &config,
     ExpiresActive = server["ExpiresActive"].getBool(true);
     ExpiresDefault = server["ExpiresDefault"].getInt32(2592000);
     if (ExpiresDefault < 0) ExpiresDefault = 2592000;
-    DefaultCharsetName = server["DefaultCharsetName"].getString("utf-8");
+    DefaultCharsetName = server["DefaultCharsetName"].getString("");
 
     RequestBodyReadLimit = server["RequestBodyReadLimit"].getInt32(-1);
 
