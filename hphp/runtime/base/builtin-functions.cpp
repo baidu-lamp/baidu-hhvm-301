@@ -913,8 +913,16 @@ String resolve_include(const String& file, const char* currentDir,
 
     if (tryFile(can_path, ctx)) {
       return can_path;
-    }
-
+    }else{
+	  String path(currentDir);
+      path += "/";
+      path += file;
+      String can_path(FileUtil::canonicalize(path.c_str(), path.size()),
+                      AttachString);
+      if (tryFile(can_path, ctx)) {
+        return can_path;
+      }
+	}
   } else {
     auto includePaths = ThreadInfo::s_threadInfo.getNoCheck()->
       m_reqInjectionData.getIncludePaths();
