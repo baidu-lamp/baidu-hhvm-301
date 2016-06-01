@@ -2630,7 +2630,9 @@ Unit* ExecutionContext::compileEvalString(
   code = makeStaticString(code);
   if (s_evaledUnits.insert(acc, code)) {
     if (RuntimeOption::EnableDynamicFuncWarn) {
-        raise_warning("Don't recommended call eval() maybe effect performance");
+      Logger::Warning("Don't recommended call eval(), "
+        "maybe effect performance "
+        "in %s on %d", getContainingFileName().data(), getLine());
     }
     acc->second = compile_string(
       code->data(),
@@ -2659,7 +2661,9 @@ const String& ExecutionContext::createFunction(const String& args,
   // user function named __lambda_func when you call create_function. Huzzah!)
   s_createfuncs.fetch_add(1, std::memory_order_acq_rel);
   if (RuntimeOption::EnableDynamicFuncWarn) {
-      raise_warning("Don't recommended call create_function() maybe effect performance");
+    Logger::Warning("Don't recommended call eval(), "
+        "maybe effect performance "
+        "in %s on %d", getContainingFileName().data(), getLine());
   }
   static StringData* oldName = makeStaticString("__lambda_func");
   std::ostringstream codeStr;
