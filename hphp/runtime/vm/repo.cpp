@@ -190,6 +190,36 @@ void Repo::saveGlobalData(GlobalData newData) {
   txn.commit();
 }
 
+bool Repo::getMessageFromTable(const std::string & tableName, std::string & message)
+{
+  std::string messageLogStr;
+  try{
+	RepoTxn txn(*this);
+	std::stringstream ssSelect;
+    ssSelect << "SELECT count(*) FROM "
+             << table(RepoIdCentral, tableName.c_str())
+             << " ;";
+	RepoStmt stmt(*this);
+    txn.prepare(stmt, ssSelect.str());
+    
+    RepoTxnQuery query(txn, stmt);
+    query.step();
+	if (!query.row()) {
+      return false;
+    }
+	int countNum = 0;
+	query.getInt(0, countNum);
+	std::stringstream ssmessage;
+	ssmessage << tableName << " :" << countNum;
+	message = ssmessage.str();
+	return true;
+  }catch(RepoExc& re) {
+	message = tableName + " :" + re.msg();
+	return false;
+  }
+  return false;
+}
+
 Unit* Repo::loadUnit(const std::string& name, const MD5& md5) {
   if (m_dbc == nullptr) {
     return nullptr;
