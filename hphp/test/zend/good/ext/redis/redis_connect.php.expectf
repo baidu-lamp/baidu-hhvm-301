@@ -1,0 +1,6 @@
+
+Warning: Failed connecting to redis server at 10.26.225.16: Success
+bool(false)
+
+Warning: Failed connecting to redis server at 10.26.225.16: Success
+Redis server went away
