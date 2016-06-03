@@ -1542,6 +1542,74 @@
                 }
             ]
         },
+		{
+            "name": "bd_lazy_is_readable",
+            "desc": "Tells whether a file exists and is readable, use fast stat cache.",
+            "flags": [
+            ],
+            "return": {
+                "type": "Boolean",
+                "desc": "Returns TRUE if the file or directory specified by filename exists and is readable, FALSE otherwise."
+            },
+            "args": [
+                {
+                    "name": "filename",
+                    "type": "String",
+                    "desc": "Path to the file."
+                }
+            ]
+        },
+		{
+            "name": "bd_lazy_is_file",
+            "desc": "Tells whether the given file is a regular file, use fast stat cache.",
+            "flags": [
+            ],
+            "return": {
+                "type": "Boolean",
+                "desc": "Returns TRUE if the filename exists and is a regular file, FALSE otherwise."
+            },
+            "args": [
+                {
+                    "name": "filename",
+                    "type": "String",
+                    "desc": "Path to the file."
+                }
+            ]
+        },
+        {
+            "name": "bd_lazy_is_dir",
+            "desc": "Tells whether the given filename is a directory, use fast stat cache.",
+            "flags": [
+            ],
+            "return": {
+                "type": "Boolean",
+                "desc": "Returns TRUE if the filename exists and is a directory, FALSE otherwise."
+            },
+            "args": [
+                {
+                    "name": "filename",
+                    "type": "String",
+                    "desc": "Path to the file. If filename is a relative filename, it will be checked relative to the current working directory. If filename is a symbolic or hard link then the link will be resolved and checked. If you have enabled safe mode, or open_basedir further restrictions may apply."
+                }
+            ]
+        },
+		{
+            "name": "bd_lazy_file_exists",
+            "desc": "Checks whether a file or directory exists, use fast stat cache.",
+            "flags": [
+            ],
+            "return": {
+                "type": "Boolean",
+                "desc": "Returns TRUE if the file or directory specified by filename exists; FALSE otherwise.\n\nThis function will return FALSE for symlinks pointing to non-existing files. Warning\n\nThis function returns FALSE for files inaccessible due to safe mode restrictions. However these files still can be included if they are located in safe_mode_include_dir.\n\nThe check is done using the real UID\/GID instead of the effective one."
+            },
+            "args": [
+                {
+                    "name": "filename",
+                    "type": "String",
+                    "desc": "Path to the file or directory.\n\nOn windows, use \/\/computername\/share\/filename or \\\\computername\\share\\filename to check files on network shares."
+                }
+            ]
+        },
         {
             "name": "stat",
             "desc": "Gathers the statistics of the file named by filename. If filename is a symbolic link, statistics are from the file itself, not the symlink.\n\nlstat() is identical to stat() except it would instead be based off the symlinks status.",

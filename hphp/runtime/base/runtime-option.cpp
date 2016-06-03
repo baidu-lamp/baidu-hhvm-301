@@ -126,6 +126,8 @@ int RuntimeOption::ServerThreadJobMaxQueuingMilliSeconds = -1;
 bool RuntimeOption::ServerThreadDropStack = false;
 bool RuntimeOption::ServerHttpSafeMode = false;
 bool RuntimeOption::ServerStatCache = false;
+bool RuntimeOption::ServerFastStatCache = false;
+int RuntimeOption::ServerFastStatCacheTTL = 5;
 std::vector<std::string> RuntimeOption::ServerWarmupRequests;
 boost::container::flat_set<std::string>
 RuntimeOption::ServerHighPriorityEndPoints;
@@ -798,6 +800,8 @@ void RuntimeOption::Load(Hdf &config,
     ServerThreadDropStack = server["ThreadDropStack"].getBool();
     ServerHttpSafeMode = server["HttpSafeMode"].getBool();
     ServerStatCache = server["StatCache"].getBool(false);
+	ServerFastStatCache = server["FastStatCache"].getBool(false);
+	ServerFastStatCacheTTL = server["FastStatCacheTTL"].getInt32(5);
     server["WarmupRequests"].get(ServerWarmupRequests);
     server["HighPriorityEndPoints"].get(ServerHighPriorityEndPoints);
     ServerExitOnBindFail = server["ExitOnBindFail"].getBool(false);

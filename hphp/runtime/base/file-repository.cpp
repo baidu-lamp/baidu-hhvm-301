@@ -36,6 +36,7 @@
 #include "hphp/runtime/base/stream-wrapper-registry.h"
 #include "hphp/runtime/base/file-stream-wrapper.h"
 #include "hphp/runtime/base/profile-dump.h"
+#include "hphp/runtime/base/fast-stat-cache.h"
 #include "hphp/runtime/server/source-root-info.h"
 
 #include "hphp/runtime/base/rds.h"
@@ -474,7 +475,7 @@ PhpFile* FileRepository::parseFile(const std::string& name,
 }
 
 bool FileRepository::fileStat(const std::string &name, struct stat *s) {
-  return StatCache::stat(name, s) == 0;
+  return FastStatCache::stat(name.c_str(), s) == 0;
 }
 
 void FileRepository::enqueueOrphanedUnitForDeletion(HPHP::Unit *u) {

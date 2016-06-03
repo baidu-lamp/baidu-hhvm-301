@@ -34,6 +34,7 @@
 #include "hphp/runtime/base/file-stream-wrapper.h"
 #include "hphp/runtime/base/directory.h"
 #include "hphp/runtime/base/thread-info.h"
+#include "hphp/runtime/base/fast-stat-cache.h"
 #include "hphp/system/systemlib.h"
 #include "hphp/util/logger.h"
 #include "hphp/util/process.h"
@@ -107,22 +108,27 @@ static bool check_error(const char *function, int line, bool ret) {
   return ret;
 }
 
+static String translateRelativePath(const String &path) {
+  String filepath = path;
+  if (path.charAt(0) != '/') {
+    String cwd = g_context->getCwd();
+    filepath = cwd + "/" + path;
+    if (!cwd.empty() && cwd[cwd.length() - 1] == '/') {
+      filepath = cwd + path;
+    }
+  }
+  return filepath;
+}
+
 static int accessSyscall(
     const String& path,
     int mode,
-    bool useFileCache = false) {
+    bool useFileCache = false,
+	bool useFastStatCache = false) {
   Stream::Wrapper* w = Stream::getWrapperFromURI(path);
-  if (useFileCache && dynamic_cast<FileStreamWrapper*>(w)) {
-       //return ::access(File::TranslatePathWithFileCache(path).data(), mode);
-       String filepath = path;
-       if (path.charAt(0) != '/') {
-            String cwd = g_context->getCwd();
-            filepath = cwd + "/" + path;
-            if (!cwd.empty() && cwd[cwd.length() - 1] == '/') {
-                filepath = cwd + path;
-            }
-       }
-       return ::access(filepath.data(),mode);
+  if (dynamic_cast<FileStreamWrapper*>(w)) {
+	  if(!useFastStatCache) return ::access(translateRelativePath(path).data(), mode);
+	  return FastStatCache::access(translateRelativePath(path).data(), mode); 
   }
   return w->access(path, mode);
 }
@@ -130,10 +136,12 @@ static int accessSyscall(
 static int statSyscall(
     const String& path,
     struct stat* buf,
-    bool useFileCache = false) {
+    bool useFileCache = false,
+	bool useFastStatCache = false) {
   Stream::Wrapper* w = Stream::getWrapperFromURI(path);
-  if (useFileCache && dynamic_cast<FileStreamWrapper*>(w)) {
-    return ::stat(File::TranslatePathWithFileCache(path).data(), buf);
+  if (dynamic_cast<FileStreamWrapper*>(w)) {
+    if(!useFastStatCache) return ::stat(translateRelativePath(path).data(), buf);
+	return FastStatCache::stat(translateRelativePath(path).data(), buf);
   }
   return w->stat(path, buf);
 }
@@ -141,10 +149,12 @@ static int statSyscall(
 static int lstatSyscall(
     const String& path,
     struct stat* buf,
-    bool useFileCache = false) {
+    bool useFileCache = false,
+	bool useFastStatCache = false) {
   Stream::Wrapper* w = Stream::getWrapperFromURI(path);
-  if (useFileCache && dynamic_cast<FileStreamWrapper*>(w)) {
-    return ::lstat(File::TranslatePathWithFileCache(path).data(), buf);
+  if (dynamic_cast<FileStreamWrapper*>(w)) {
+    if(!useFastStatCache) return ::lstat(translateRelativePath(path).data(), buf);
+	return FastStatCache::lstat(translateRelativePath(path).data(), buf);
   }
   return w->lstat(path, buf);
 }
@@ -851,6 +861,46 @@ bool f_is_uploaded_file(const String& filename) {
 bool f_file_exists(const String& filename) {
   if (filename.empty() ||
       (accessSyscall(filename, F_OK, true)) < 0) {
+    return false;
+  }
+  return true;
+}
+
+bool f_bd_lazy_is_readable(const String& filename) {
+  if (filename.empty()) {
+    return false;
+  }
+  CHECK_SYSTEM(accessSyscall(filename, R_OK, true, true));
+  return true;
+}
+
+bool f_bd_lazy_is_file(const String& filename) {
+  struct stat sb;
+  CHECK_SYSTEM(statSyscall(filename, &sb, true, true));
+  return (sb.st_mode & S_IFMT) == S_IFREG;
+}
+
+bool f_bd_lazy_is_dir(const String& filename) {
+  String cwd;
+  if (filename.empty()) {
+    return false;
+  }
+  bool isRelative = (filename.charAt(0) != '/');
+  if (isRelative) cwd = g_context->getCwd();
+  if (!isRelative || cwd == String(RuntimeOption::SourceRoot)) {
+    if (File::IsVirtualDirectory(filename)) {
+      return true;
+    }
+  }
+
+  struct stat sb;
+  CHECK_SYSTEM(statSyscall(filename, &sb, false, true));
+  return (sb.st_mode & S_IFMT) == S_IFDIR;
+}
+
+bool f_bd_lazy_file_exists(const String& filename) {
+  if (filename.empty() ||
+      (accessSyscall(filename, F_OK, true, true)) < 0) {
     return false;
   }
   return true;

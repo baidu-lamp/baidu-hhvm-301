@@ -39,6 +39,7 @@
 #include "hphp/runtime/base/memory-manager.h"
 #include "hphp/runtime/base/program-functions.h"
 #include "hphp/runtime/base/shared-store-base.h"
+#include "hphp/runtime/base/fast-stat-cache.h"
 #include "hphp/runtime/ext/mysql/mysql_stats.h"
 #include "hphp/runtime/vm/repo.h"
 #include "hphp/runtime/vm/jit/mc-generator.h"
@@ -150,6 +151,9 @@ void AdminRequestHandler::handleRequest(Transport *transport) {
         "/status.json:     show server status in JSON\n"
         "/status.html:     show server status in HTML\n"
 
+		"/check-fcache:    how many items of stat, lstat, access in fast stat cache map\n"
+		"/clear-fcache:    clear fast stat cache(include map of stat, lstat, access)\n"
+		
         "/stats-on:        main switch: enable server stats\n"
         "/stats-off:       main switch: disable server stats\n"
         "/stats-clear:     clear all server stats\n"
@@ -308,6 +312,12 @@ void AdminRequestHandler::handleRequest(Transport *transport) {
       transport->sendString(translated);
       break;
     }
+	if (cmd == "clear-fcache") {
+	  FastStatCache::clearFastStatCache();
+	  transport->sendString("fast stat cache is clear!");
+	  return true;
+    }
+  
     if (strncmp(cmd.c_str(), "check", 5) == 0 &&
         handleCheckRequest(cmd, transport)) {
       break;
@@ -676,6 +686,16 @@ bool AdminRequestHandler::handleCheckRequest(const std::string &cmd,
     stats += MySqlStats::ReportStats();
     stats += "</SQL>\n";
     transport->sendString(stats);
+    return true;
+  }
+ if (cmd == "check-fcache") {
+	ResultMapCount result_map_count;
+    FastStatCache::getResultMapCount(result_map_count);
+	std::stringstream out;
+	out << "stat map count:" << result_map_count.stat_cache_count << endl;
+	out << "lstat map count:" << result_map_count.lstat_cache_count << endl;
+	out << "access map count:" << result_map_count.access_cache_count << endl;
+    transport->sendString(out.str());
     return true;
   }
   return false;

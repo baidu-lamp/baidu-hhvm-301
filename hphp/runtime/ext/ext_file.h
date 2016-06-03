@@ -134,6 +134,12 @@ bool f_is_dir(const String& filename);
 bool f_is_link(const String& filename);
 bool f_is_uploaded_file(const String& filename);
 bool f_file_exists(const String& filename);
+
+bool f_bd_lazy_is_readable(const String& filename);
+bool f_bd_lazy_is_file(const String& filename);
+bool f_bd_lazy_is_dir(const String& filename);
+bool f_bd_lazy_file_exists(const String& filename);
+
 Variant f_stat(const String& filename);
 Variant f_lstat(const String& filename);
 void f_clearstatcache(bool clear_realpath_cache = false,
