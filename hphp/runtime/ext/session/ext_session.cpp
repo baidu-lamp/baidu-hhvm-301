@@ -1133,7 +1133,7 @@ static bool ini_on_update_trans_sid(const bool& value) {
 }
 
 static bool ini_on_update_save_dir(const std::string& value) {
-  if (value.find('\0') >= 0) {
+  if (value.find('\0') < 0) {
     return false;
   }
   const char *path = value.data() + value.rfind(';') + 1;
