@@ -77,7 +77,7 @@ static_assert(sizeof(ObjectData) == 32, "Change this only on purpose");
 //////////////////////////////////////////////////////////////////////
 
 bool ObjectData::destruct() {
-  if (UNLIKELY(RuntimeOption::EnableObjDestructCall)) {
+  if (UNLIKELY(RuntimeOption::EnableObjDestructCall && m_cls->getDtor())) {
     g_context->m_liveBCObjs.erase(this);
   }
   if (!noDestruct()) {

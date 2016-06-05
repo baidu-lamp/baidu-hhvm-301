@@ -182,6 +182,9 @@ namespace Stats {
   STAT(vixl_SimulatedInstr) \
   STAT(vixl_SimulatedLoad) \
   STAT(vixl_SimulatedStore) \
+  /* ObjectData construction */ \
+  STAT(ObjectData_new_dtor_yes) \
+  STAT(ObjectData_new_dtor_no) \
 
 enum StatCounter {
 #define STAT(name) \
