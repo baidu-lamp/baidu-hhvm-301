@@ -1690,7 +1690,7 @@ inline DataType propPreNull(TypedValue& tvScratch, TypedValue*& result) {
   tvWriteNull(&tvScratch);
   result = &tvScratch;
   if (warn) {
-    raise_warning("Cannot access property on non-object");
+    raise_notice("Cannot access property on non-object");
   }
   return KindOfNull;
 }
