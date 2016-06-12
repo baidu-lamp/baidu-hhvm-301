@@ -49,7 +49,10 @@ SocketConnection::~SocketConnection() {
 }
 
 void SocketConnection::timeoutExpired() noexcept {
-  Logger::Info("Fastcgi connection: connection time took longer than %d s and timeout, it will be shutdown!", RuntimeOption::ConnectionTimeoutSeconds);
+  int timeout = RuntimeOption::ConnectionTimeoutSeconds;
+  // default 2 minutes
+  if(timeout <= 0) timeout = 120;
+  Logger::Info("Fastcgi connection: connection time took longer than %d s and timeout, it will be shutdown!", timeout);
   shutdownTransport();
 }
 
