@@ -1074,6 +1074,14 @@
                     "name": "OPT_SERVER_FAILURE_LIMIT",
                     "type": "Int64"
                 },
+				{
+				    "name": "OPT_DEAD_TIMEOUT",
+				    "type": "Int64"
+				},
+				{
+				    "name": "OPT_REMOVE_FAILED_SERVERS",
+				    "type": "Int64"
+				},
                 {
                     "name": "HAVE_IGBINARY",
                     "type": "Boolean"
@@ -1176,6 +1184,14 @@
                 },
                 {
                     "name": "RES_INVALID_HOST_PROTOCOL",
+                    "type": "Int64"
+                },
+                {
+                    "name": "RES_SERVER_MARKED_DEAD",
+                    "type": "Int64"
+                },
+                {
+                    "name": "RES_SERVER_TEMPORARILY_DISABLED",
                     "type": "Int64"
                 }
             ]

@@ -86,6 +86,10 @@ extern const int64_t q_Memcached$$RES_CONNECTION_SOCKET_CREATE_FAILURE;
 extern const int64_t q_Memcached$$RES_PAYLOAD_FAILURE;
 extern const int64_t q_Memcached$$RES_NOT_SUPPORTED;
 extern const int64_t q_Memcached$$RES_INVALID_HOST_PROTOCOL;
+extern const int64_t q_Memcached$$OPT_DEAD_TIMEOUT;
+extern const int64_t q_Memcached$$OPT_REMOVE_FAILED_SERVERS;
+extern const int64_t q_Memcached$$RES_SERVER_MARKED_DEAD;
+extern const int64_t q_Memcached$$RES_SERVER_TEMPORARILY_DISABLED;
 
 ///////////////////////////////////////////////////////////////////////////////
 // class Memcached

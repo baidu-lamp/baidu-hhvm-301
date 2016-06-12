@@ -48,6 +48,9 @@ IMPLEMENT_THREAD_LOCAL(c_Memcached::ImplMap, c_Memcached::s_persistentMap);
 #define MEMC_VAL_COMPRESSION_FASTLZ (1<<6)
     
 #define MEMC_COMPRESS_THRESHOLD 100
+#if defined(LIBMEMCACHED_VERSION_HEX) && LIBMEMCACHED_VERSION_HEX < 0x00052000
+#  define MEMCACHED_SERVER_TEMPORARILY_DISABLED (1024 << 2)
+#endif
 
 // Class options
 const int64_t q_Memcached$$OPT_COMPRESSION = -1001;
@@ -115,7 +118,15 @@ const int64_t q_Memcached$$OPT_CACHE_LOOKUPS
           = MEMCACHED_BEHAVIOR_CACHE_LOOKUPS;
 const int64_t q_Memcached$$OPT_SERVER_FAILURE_LIMIT
           = MEMCACHED_BEHAVIOR_SERVER_FAILURE_LIMIT;
-
+#if defined(LIBMEMCACHED_VERSION_HEX) && LIBMEMCACHED_VERSION_HEX >= 0x01000003
+const int64_t q_Memcached$$OPT_DEAD_TIMEOUT
+          = MEMCACHED_BEHAVIOR_DEAD_TIMEOUT;
+#endif
+#if defined(LIBMEMCACHED_VERSION_HEX) && LIBMEMCACHED_VERSION_HEX >= 0x00049000
+const int64_t q_Memcached$$OPT_REMOVE_FAILED_SERVERS
+          = MEMCACHED_BEHAVIOR_REMOVE_FAILED_SERVERS;
+#endif
+		  
 // libmemcached result codes
 const int64_t q_Memcached$$RES_SUCCESS
           = MEMCACHED_SUCCESS;
@@ -161,7 +172,11 @@ const int64_t q_Memcached$$RES_NOT_SUPPORTED
           = MEMCACHED_NOT_SUPPORTED;
 const int64_t q_Memcached$$RES_INVALID_HOST_PROTOCOL
           = MEMCACHED_INVALID_HOST_PROTOCOL;
-
+const int64_t q_Memcached$$RES_SERVER_MARKED_DEAD
+          = MEMCACHED_SERVER_MARKED_DEAD;
+const int64_t q_Memcached$$RES_SERVER_TEMPORARILY_DISABLED                
+          = MEMCACHED_SERVER_TEMPORARILY_DISABLED;
+		  
 // Our result codes
 const int64_t q_Memcached$$RES_PAYLOAD_FAILURE = -1001;
 
