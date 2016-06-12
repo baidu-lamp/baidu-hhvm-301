@@ -375,7 +375,9 @@ void ExecutionContext::flush() {
     fflush(stdout);
   } else if (RuntimeOption::EnableEarlyFlush && m_protectedLevel &&
              (m_transport == nullptr ||
-              (m_transport->getHTTPVersion() == "1.1" &&
+		      ((RuntimeOption::ServerType == "fastcgi" ||
+			  (RuntimeOption::ServerType == "libevent" &&
+			   m_transport->getHTTPVersion() == "1.1")) &&
                m_transport->getMethod() != Transport::Method::HEAD))) {
     StringBuffer &oss = m_buffers.front()->oss;
     if (!oss.empty()) {
