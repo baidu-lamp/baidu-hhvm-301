@@ -576,16 +576,16 @@ class Redis {
       $args[] = $this->prefix($key);
       $args[] = $this->serialize($val);
     }
-    $this->processArrayCommand($cmd, $args);
+    return $this->processArrayCommand($cmd, $args);
   }
 
   public function mSet(array $data) {
-    $this->processMSetCommand('MSET', $data);
+    if (!$this->processMSetCommand('MSET', $data)) return false;
     return $this->processBooleanResponse();
   }
 
   public function mSetNx(array $data) {
-    $this->processMSetCommand('MSETNX', $data);
+    if (!$this->processMSetCommand('MSETNX', $data)) return false;
     return $this->process1Response();
   }
 
